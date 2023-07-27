@@ -5,11 +5,12 @@ const dotenv = require('dotenv');
 // Load environment variables from .env file
 dotenv.config();
 
-// Set up AWS credentials and region from environment variables
+// Set up Vultr credentials and region from environment variables
 AWS.config.update({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION,
+  accessKeyId: process.env.Vultr_ACCESS_KEY_ID,
+  secretAccessKey: process.env.Vultr_SECRET_ACCESS_KEY,
+  region: process.env.Vultr_REGION,
+  endpoint: process.env.Vultr_ENDPOINT ,
 });
 
 // Create an S3 instance
@@ -29,16 +30,16 @@ function uploadImageToS3(bucketName, imageName, imagePath) {
 
 // Function to upload multiple images
 async function uploadImages() {
-  const bucketName = process.env.AWS_BUCKET_NAME;
+  const bucketName = process.env.Vultr_BUCKET_NAME;
 
   try {
     // Upload images one by one
     const imageUploadPromises = [];
-    imageUploadPromises.push(uploadImageToS3(bucketName, 'image1.jpg', 'path/to/image1.jpg'));
-    imageUploadPromises.push(uploadImageToS3(bucketName, 'image2.jpg', 'path/to/image2.jpg'));
-    imageUploadPromises.push(uploadImageToS3(bucketName, 'image3.jpg', 'path/to/image3.jpg'));
-    imageUploadPromises.push(uploadImageToS3(bucketName, 'image4.jpg', 'path/to/image4.jpg'));
-    imageUploadPromises.push(uploadImageToS3(bucketName, 'image5.jpg', 'path/to/image5.jpg'));
+    imageUploadPromises.push(uploadImageToS3(bucketName, 'image1.jpg', `${__dirname}/1.png`));
+    imageUploadPromises.push(uploadImageToS3(bucketName, 'image2.jpg', `${__dirname}/2.png`));
+    imageUploadPromises.push(uploadImageToS3(bucketName, 'image3.jpg', `${__dirname}/3.png`));
+    imageUploadPromises.push(uploadImageToS3(bucketName, 'image4.jpg', `${__dirname}/4.png`));
+    imageUploadPromises.push(uploadImageToS3(bucketName, 'image5.jpg', `${__dirname}/5.png`));
 
     // Wait for all uploads to finish
     const uploadedImages = await Promise.all(imageUploadPromises);
