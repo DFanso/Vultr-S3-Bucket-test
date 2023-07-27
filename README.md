@@ -1,6 +1,6 @@
 # Vultr-S3-Bucket-test
 
-crate.env and Replace With your tokens
+crate.env and Replace it With your tokens
 
 ``Vultr_ACCESS_KEY_ID= ``
 ``Vultr_SECRET_ACCESS_KEY= ``
