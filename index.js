@@ -1,6 +1,11 @@
+const express = require('express');
 const AWS = require('aws-sdk');
 const fs = require('fs');
 const dotenv = require('dotenv');
+const multer = require('multer');
+
+const app = express();
+const upload = multer({ dest: 'uploads/' }); // Destination folder for uploaded files
 
 // Load environment variables from .env file
 dotenv.config();
@@ -10,7 +15,7 @@ AWS.config.update({
   accessKeyId: process.env.Vultr_ACCESS_KEY_ID,
   secretAccessKey: process.env.Vultr_SECRET_ACCESS_KEY,
   region: process.env.Vultr_REGION,
-  endpoint: process.env.Vultr_ENDPOINT ,
+  endpoint: process.env.Vultr_ENDPOINT,
 });
 
 // Create an S3 instance
@@ -28,29 +33,37 @@ function uploadImageToS3(bucketName, imageName, imagePath) {
   return s3.upload(params).promise();
 }
 
-// Function to upload multiple images
-async function uploadImages() {
+// API route to handle image uploads
+app.post('/upload-images', upload.array('images', 5), async (req, res) => {
   const bucketName = process.env.Vultr_BUCKET_NAME;
+  const uploadedImages = [];
 
   try {
     // Upload images one by one
-    const imageUploadPromises = [];
-    imageUploadPromises.push(uploadImageToS3(bucketName, 'image1.jpg', `${__dirname}/1.png`));
-    imageUploadPromises.push(uploadImageToS3(bucketName, 'image2.jpg', `${__dirname}/2.png`));
-    imageUploadPromises.push(uploadImageToS3(bucketName, 'image3.jpg', `${__dirname}/3.png`));
-    imageUploadPromises.push(uploadImageToS3(bucketName, 'image4.jpg', `${__dirname}/4.png`));
-    imageUploadPromises.push(uploadImageToS3(bucketName, 'image5.jpg', `${__dirname}/5.png`));
+    const imageUploadPromises = req.files.map((file, index) => {
+      return uploadImageToS3(bucketName, `image${index + 1}.jpg`, file.path)
+        .then((uploadedImage) => {
+          uploadedImages.push(uploadedImage.Location);
+        })
+        .catch((err) => {
+          console.error('Error uploading an image:', err);
+        });
+    });
 
     // Wait for all uploads to finish
-    const uploadedImages = await Promise.all(imageUploadPromises);
+    await Promise.all(imageUploadPromises);
 
     console.log('Images uploaded successfully:');
-    uploadedImages.forEach((image) => {
-      console.log(image.Location);
-    });
+    console.log(uploadedImages);
+
+    res.json({ message: 'Images uploaded successfully', uploadedImages });
   } catch (err) {
     console.error('Error uploading images:', err);
+    res.status(500).json({ error: 'Error uploading images' });
   }
-}
+});
 
-uploadImages();
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
