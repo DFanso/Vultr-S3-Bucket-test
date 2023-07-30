@@ -3,9 +3,11 @@ const AWS = require('aws-sdk');
 const fs = require('fs');
 const dotenv = require('dotenv');
 const multer = require('multer');
+const cors = require('cors');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' }); // Destination folder for uploaded files
+app.use(cors());
 
 // Load environment variables from .env file
 dotenv.config();
@@ -63,7 +65,7 @@ app.post('/upload-images', upload.array('images', 5), async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
